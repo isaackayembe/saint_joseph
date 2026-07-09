@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Annuler Rendez-vous - Saint Joseph{% endblock %}
+{% block content %}
+<div class="md:ml-64 p-8 mt-16 flex items-center justify-center min-h-screen">
+    <div class="max-w-md w-full">
+        <div class="bg-white rounded-lg shadow-xl p-8 text-center">
+            <i class="fas fa-exclamation-triangle text-red-600 text-5xl mb-4"></i>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Annuler le Rendez-vous</h2>
+            <p class="text-gray-600 mb-6">Êtes-vous sûr de vouloir annuler ce rendez-vous du {{ rdv.date_heure|date:"d/m/Y H:i" }} ?</p>
+            <div class="bg-red-50 border border-red-200 rounded p-4 mb-6 text-sm text-red-800">
+                <i class="fas fa-info-circle mr-2"></i>
+                Cette action peut être annulée plus tard.
+            </div>
+            <div class="space-y-3">
+                <form method="post" class="w-full">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition">
+                        <i class="fas fa-times mr-2"></i>Annuler le RDV
+                    </button>
+                </form>
+                <a href="javascript:history.back()" class="block bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 rounded-lg text-center transition">
+                    <i class="fas fa-check mr-2"></i>Garder le RDV
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

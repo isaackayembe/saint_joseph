@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Détails Rendez-vous - Saint Joseph{% endblock %}
+{% block content %}
+<div class="md:ml-64 p-8 mt-16">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-800">Rendez-vous #{{ rdv.id }}</h2>
+            <p class="text-gray-600 mt-2">{{ rdv.date_heure|date:"d/m/Y H:i" }}</p>
+        </div>
+        <div class="space-x-2">
+            <a href="{% url 'saint_joseph:rendez_vous_edit' rdv.id %}" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-edit mr-2"></i>Modifier
+            </a>
+            {% if rdv.statut != 'annule' and rdv.statut != 'realise' %}
+            <a href="{% url 'saint_joseph:rendez_vous_cancel' rdv.id %}" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-times mr-2"></i>Annuler
+            </a>
+            {% endif %}
+            <a href="{% url 'saint_joseph:rendez_vous_list' %}" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-arrow-left mr-2"></i>Retour
+            </a>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-sm text-gray-600">Patient</p>
+                        <p class="font-semibold text-gray-800">{{ rdv.patient.numero_patient }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Médecin</p>
+                        <p class="font-semibold text-gray-800">{{ rdv.medecin.user.get_full_name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Date & Heure</p>
+                        <p class="font-semibold text-gray-800">{{ rdv.date_heure|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Statut</p>
+                        <p><span class="{% if rdv.statut == 'realise' %}bg-green-100 text-green-800{% elif rdv.statut == 'annule' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %} px-3 py-1 rounded-full text-sm">{{ rdv.get_statut_display }}</span></p>
+                    </div>
+                </div>
+                <div class="mt-6 pt-6 border-t">
+                    <p class="text-sm text-gray-600">Motif</p>
+                    <p class="text-gray-800">{{ rdv.motif }}</p>
+                </div>
+                {% if rdv.notes %}
+                <div class="mt-6 pt-6 border-t">
+                    <p class="text-sm text-gray-600">Notes</p>
+                    <p class="text-gray-800">{{ rdv.notes }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="bg-blue-50 rounded-lg p-6 border border-blue-200 h-fit">
+            <h4 class="font-bold text-blue-900 mb-4">Informations</h4>
+            <ul class="text-sm text-blue-800 space-y-2">
+                <li><strong>Crée:</strong> {{ rdv.date_creation|date:"d/m/Y" }}</li>
+                <li><strong>Modifié:</strong> {{ rdv.date_modification|date:"d/m/Y" }}</li>
+                <li><strong>Statut:</strong> {{ rdv.get_statut_display }}</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

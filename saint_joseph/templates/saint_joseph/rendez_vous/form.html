@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}{% if is_edit %}Modifier{% else %}Créer{% endif %} Rendez-vous - Saint Joseph{% endblock %}
+{% block content %}
+<div class="md:ml-64 p-8 mt-16">
+    <div class="max-w-2xl">
+        <h2 class="text-3xl font-bold text-gray-800 mb-8">{% if is_edit %}Modifier Rendez-vous{% else %}Nouveau Rendez-vous{% endif %}</h2>
+        <div class="bg-white rounded-lg shadow p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Patient *</label>
+                        {{ form.patient }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Médecin *</label>
+                        {{ form.medecin }}
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Date & Heure *</label>
+                        {{ form.date_heure }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Statut</label>
+                        {{ form.statut }}
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Motif *</label>
+                    {{ form.motif }}
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
+                    {{ form.notes }}
+                </div>
+                <div class="flex gap-4 pt-6 border-t">
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">
+                        <i class="fas fa-save mr-2"></i>{% if is_edit %}Mettre à Jour{% else %}Créer{% endif %}
+                    </button>
+                    <a href="{% url 'saint_joseph:rendez_vous_list' %}" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 rounded-lg text-center transition">
+                        <i class="fas fa-times mr-2"></i>Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

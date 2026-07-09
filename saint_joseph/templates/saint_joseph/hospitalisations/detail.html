@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Détails Hospitalisation - Saint Joseph{% endblock %}
+{% block content %}
+<div class="md:ml-64 p-8 mt-16">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-800">Hospitalisation #{{ hospitalisation.id }}</h2>
+            <p class="text-gray-600 mt-2">{{ hospitalisation.patient.numero_patient }}</p>
+        </div>
+        <div class="space-x-2">
+            <a href="{% url 'saint_joseph:hospitalisation_edit' hospitalisation.id %}" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-edit mr-2"></i>Modifier
+            </a>
+            {% if hospitalisation.statut != 'sortie' %}
+            <a href="{% url 'saint_joseph:hospitalisation_discharge' hospitalisation.id %}" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-sign-out-alt mr-2"></i>Sortie
+            </a>
+            {% endif %}
+            <a href="{% url 'saint_joseph:hospitalisation_list' %}" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-arrow-left mr-2"></i>Retour
+            </a>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Informations</h3>
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-sm text-gray-600">Patient</p>
+                        <p class="font-semibold text-gray-800">{{ hospitalisation.patient.utilisateur.user.get_full_name }}</p>
+                        <p class="text-sm text-gray-600">{{ hospitalisation.patient.numero_patient }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Médecin</p>
+                        <p class="font-semibold text-gray-800">{{ hospitalisation.medecin_responsable.user.get_full_name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Date Admission</p>
+                        <p class="font-semibold text-gray-800">{{ hospitalisation.date_admission|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Date Sortie</p>
+                        <p class="font-semibold text-gray-800">{% if hospitalisation.date_sortie %}{{ hospitalisation.date_sortie|date:"d/m/Y H:i" }}{% else %}<span class="text-red-600">En cours</span>{% endif %}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Localisation</h3>
+                <div class="grid grid-cols-3 gap-6">
+                    <div>
+                        <p class="text-sm text-gray-600">Lit</p>
+                        <p class="font-semibold text-2xl text-gray-800 bg-orange-100 px-4 py-2 rounded text-center">{{ hospitalisation.lit }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Chambre</p>
+                        <p class="font-semibold text-gray-800">{{ hospitalisation.chambre|default:"N/A" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Étage</p>
+                        <p class="font-semibold text-gray-800">{{ hospitalisation.etage|default:"N/A" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Motif Admission</h3>
+                <p class="text-gray-800">{{ hospitalisation.motif_admission }}</p>
+            </div>
+
+            {% if hospitalisation.observations %}
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Observations</h3>
+                <p class="text-gray-800">{{ hospitalisation.observations }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div>
+            <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                <h4 class="font-bold text-blue-900 mb-4">Statut</h4>
+                <p><span class="{% if hospitalisation.statut == 'sortie' %}bg-gray-100 text-gray-800{% elif hospitalisation.statut == 'hospitalisee' %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %} px-3 py-1 rounded-full">{{ hospitalisation.get_statut_display }}</span></p>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-6 border border-gray-200 mt-6">
+                <h4 class="font-bold text-gray-800 mb-4">Durée</h4>
+                <p>{{ hospitalisation.date_admission|date:"d/m/Y" }} → {% if hospitalisation.date_sortie %}{{ hospitalisation.date_sortie|date:"d/m/Y" }}{% else %}<span class="text-red-600">En cours</span>{% endif %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

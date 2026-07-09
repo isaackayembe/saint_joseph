@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block title %}Détails Patient - Saint Joseph{% endblock %}
+
+{% block content %}
+<div class="md:ml-64 p-8 mt-16">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-800">{{ patient.numero_patient }}</h2>
+            <p class="text-gray-600 mt-2">{{ patient.utilisateur.user.get_full_name }}</p>
+        </div>
+        <div class="space-x-2">
+            <a href="{% url 'saint_joseph:patient_edit' patient.id %}" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-edit mr-2"></i>Modifier
+            </a>
+            <a href="{% url 'saint_joseph:patient_list' %}" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-arrow-left mr-2"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column - Patient Info -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Personal Information -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-user mr-2 text-blue-600"></i>Informations Personnelles
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600">Nom Complet</p>
+                        <p class="font-semibold text-gray-800">{{ patient.utilisateur.user.get_full_name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Date de Naissance</p>
+                        <p class="font-semibold text-gray-800">{{ patient.date_naissance|date:"d/m/Y" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Sexe</p>
+                        <p class="font-semibold text-gray-800">{{ patient.get_sexe_display }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Groupe Sanguin</p>
+                        <p class="font-semibold text-gray-800">
+                            {% if patient.groupe_sanguin %}
+                                <span class="bg-red-100 text-red-800 px-3 py-1 rounded">{{ patient.groupe_sanguin }}</span>
+                            {% else %}
+                                <span class="text-gray-500">Non renseigné</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-phone mr-2 text-blue-600"></i>Contact
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600">Email</p>
+                        <p class="font-semibold text-gray-800">{{ patient.email }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Téléphone</p>
+                        <p class="font-semibold text-gray-800">{{ patient.telephone }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Adresse</p>
+                        <p class="font-semibold text-gray-800">{{ patient.adresse }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Ville</p>
+                        <p class="font-semibold text-gray-800">{{ patient.ville }}, {{ patient.code_postal }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Contact -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-exclamation-triangle mr-2 text-orange-600"></i>Personne de Contact d'Urgence
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600">Nom</p>
+                        <p class="font-semibold text-gray-800">{{ patient.personne_contact }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Téléphone</p>
+                        <p class="font-semibold text-gray-800">{{ patient.telephone_contact }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Information -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-heartbeat mr-2 text-red-600"></i>Données Médicales
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-sm text-gray-600 font-semibold">Allergies</p>
+                        <p class="text-gray-800">{{ patient.allergies|default:"Aucune allergies déclarées" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 font-semibold">Antécédents Médicaux</p>
+                        <p class="text-gray-800">{{ patient.antecedents_medicaux|default:"Aucun antécédent déclaré" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consultations -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-stethoscope mr-2 text-blue-600"></i>Consultations Récentes
+                </h3>
+                {% if consultations %}
+                    <div class="space-y-4">
+                        {% for consultation in consultations|slice:":5" %}
+                        <div class="border-l-4 border-blue-500 pl-4 py-2">
+                            <p class="font-semibold text-gray-800">{{ consultation.motif }}</p>
+                            <p class="text-sm text-gray-600">{{ consultation.date_consultation|date:"d/m/Y H:i" }}</p>
+                            <p class="text-sm text-gray-600">Dr. {{ consultation.medecin.user.get_full_name }}</p>
+                            <a href="{% url 'saint_joseph:consultation_detail' consultation.id %}" class="text-blue-600 hover:text-blue-800 text-sm">
+                                Voir détails →
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if consultations.count > 5 %}
+                        <a href="{% url 'saint_joseph:dossier_detail' patient.id %}" class="mt-4 text-blue-600 hover:text-blue-800">
+                            Voir toutes les consultations →
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-8">Aucune consultation enregistrée</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column - Actions & Info -->
+        <div class="space-y-6">
+            <!-- Quick Actions -->
+            <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                <h4 class="font-bold text-blue-900 mb-4">
+                    <i class="fas fa-bolt mr-2"></i>Actions Rapides
+                </h4>
+                <div class="space-y-2">
+                    <a href="{% url 'saint_joseph:consultation_create' %}" class="block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-center transition">
+                        <i class="fas fa-stethoscope mr-2"></i>Nouvelle Consultation
+                    </a>
+                    <a href="{% url 'saint_joseph:rendez_vous_create' %}" class="block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-center transition">
+                        <i class="fas fa-calendar-plus mr-2"></i>Rendez-vous
+                    </a>
+                    <a href="{% url 'saint_joseph:dossier_detail' patient.id %}" class="block bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-center transition">
+                        <i class="fas fa-folder-open mr-2"></i>Dossier Complet
+                    </a>
+                </div>
+            </div>
+
+            <!-- Dossier Medical Info -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h4 class="font-bold text-gray-800 mb-4">
+                    <i class="fas fa-file-medical mr-2 text-red-600"></i>Dossier Médical
+                </h4>
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-sm text-gray-600">Numéro</p>
+                        <p class="font-mono text-gray-800">{{ dossier.numero_dossier }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Ouvert le</p>
+                        <p class="text-gray-800">{{ dossier.date_ouverture|date:"d/m/Y" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Statut</p>
+                        <p>
+                            {% if dossier.est_actif %}
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">Actif</span>
+                            {% else %}
+                                <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">Inactif</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Consultations</p>
+                        <p class="text-lg font-bold text-gray-800">{{ consultations.count }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient Status -->
+            <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <h4 class="font-bold text-gray-800 mb-4">Informations</h4>
+                <ul class="text-sm text-gray-700 space-y-2">
+                    <li><i class="fas fa-check text-green-600 mr-2"></i>Inscription: {{ patient.date_inscription|date:"d/m/Y" }}</li>
+                    <li><i class="fas fa-check text-green-600 mr-2"></i>Dernier accès: {{ patient.date_modification|date:"d/m/Y" }}</li>
+                    <li><i class="fas fa-check text-green-600 mr-2"></i>Dossier: Actif</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

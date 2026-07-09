@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de Bord - Saint Joseph{% endblock %}
+
+{% block content %}
+<div class="md:ml-64 p-8 mt-16">
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-800">Tableau de Bord</h2>
+        <p class="text-gray-600 mt-2">Bienvenue {{ user.get_full_name }}, vous êtes connecté en tant que
+            <span class="font-bold">{{ user.profil_utilisateur.get_role_display }}</span></p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Patients -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm">Total Patients</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ total_patients }}</p>
+                </div>
+                <i class="fas fa-users text-blue-500 text-4xl opacity-20"></i>
+            </div>
+        </div>
+
+        <!-- Consultations Today -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm">Consultations Aujourd'hui</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ consultations_today }}</p>
+                </div>
+                <i class="fas fa-stethoscope text-green-500 text-4xl opacity-20"></i>
+            </div>
+        </div>
+
+        <!-- Rendez-vous Prévus -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm">Rendez-vous Prévus</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ rdv_prevus }}</p>
+                </div>
+                <i class="fas fa-calendar text-orange-500 text-4xl opacity-20"></i>
+            </div>
+        </div>
+
+        <!-- Hospitalisations -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm">Hospitalisés</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ hospitalisees }}</p>
+                </div>
+                <i class="fas fa-bed text-red-500 text-4xl opacity-20"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Consultations -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-stethoscope mr-2"></i>Consultations Récentes
+                </h3>
+            </div>
+            <div class="p-6">
+                {% if recent_consultations %}
+                <div class="space-y-4">
+                    {% for consultation in recent_consultations %}
+                    <div class="border-l-4 border-blue-500 pl-4 py-2">
+                        <p class="font-semibold text-gray-800">
+                            {{ consultation.dossier_medical.patient.numero_patient }}
+                        </p>
+                        <p class="text-sm text-gray-600">{{ consultation.motif }}</p>
+                        <p class="text-xs text-gray-500">
+                            {{ consultation.date_consultation|date:"d/m/Y H:i" }}
+                        </p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-center py-8">Aucune consultation récente</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Upcoming Appointments -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-calendar mr-2"></i>Rendez-vous à Venir
+                </h3>
+            </div>
+            <div class="p-6">
+                {% if upcoming_appointments %}
+                <div class="space-y-4">
+                    {% for rdv in upcoming_appointments %}
+                    <div class="border-l-4 border-orange-500 pl-4 py-2">
+                        <p class="font-semibold text-gray-800">
+                            {{ rdv.patient.numero_patient }}
+                        </p>
+                        <p class="text-sm text-gray-600">{{ rdv.motif }}</p>
+                        <p class="text-xs text-gray-500">
+                            {{ rdv.date_heure|date:"d/m/Y H:i" }}
+                        </p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-center py-8">Aucun rendez-vous à venir</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-8 bg-white rounded-lg shadow p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Actions Rapides</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {% if user.profil_utilisateur.role in 'medecin,infirmier,admin' %}
+            <a href="{% url 'saint_joseph:patient_create' %}"
+                class="p-4 border border-gray-200 rounded hover:bg-blue-50 text-center transition">
+                <i class="fas fa-user-plus text-blue-500 text-2xl mb-2"></i>
+                <p class="text-sm font-semibold">Nouveau Patient</p>
+            </a>
+            {% endif %}
+
+            {% if user.profil_utilisateur.role in 'medecin,admin' %}
+            <a href="{% url 'saint_joseph:consultation_create' %}"
+                class="p-4 border border-gray-200 rounded hover:bg-green-50 text-center transition">
+                <i class="fas fa-stethoscope text-green-500 text-2xl mb-2"></i>
+                <p class="text-sm font-semibold">Consultation</p>
+            </a>
+            {% endif %}
+
+            {% if user.profil_utilisateur.role in 'medecin,infirmier,admin' %}
+            <a href="{% url 'saint_joseph:rendez_vous_create' %}"
+                class="p-4 border border-gray-200 rounded hover:bg-orange-50 text-center transition">
+                <i class="fas fa-calendar-plus text-orange-500 text-2xl mb-2"></i>
+                <p class="text-sm font-semibold">Rendez-vous</p>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'saint_joseph:patient_list' %}"
+                class="p-4 border border-gray-200 rounded hover:bg-purple-50 text-center transition">
+                <i class="fas fa-list text-purple-500 text-2xl mb-2"></i>
+                <p class="text-sm font-semibold">Voir Patients</p>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

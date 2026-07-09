@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Rendez-vous - Saint Joseph{% endblock %}
+{% block content %}
+<div class="md:ml-64 p-8 mt-16">
+    <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-800">Rendez-vous ({{ page_obj.paginator.count }})</h2>
+        <a href="{% url 'saint_joseph:rendez_vous_create' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+            <i class="fas fa-calendar-plus mr-2"></i>Nouveau
+        </a>
+    </div>
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-gray-100 border-b-2 border-gray-300">
+                <tr>
+                    <th class="px-6 py-3 text-left">Patient</th>
+                    <th class="px-6 py-3 text-left">Médecin</th>
+                    <th class="px-6 py-3 text-left">Date</th>
+                    <th class="px-6 py-3 text-left">Motif</th>
+                    <th class="px-6 py-3 text-left">Statut</th>
+                    <th class="px-6 py-3 text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rdv in page_obj %}
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-6 py-4">{{ rdv.patient.numero_patient }}</td>
+                    <td class="px-6 py-4">{{ rdv.medecin.user.get_full_name }}</td>
+                    <td class="px-6 py-4 text-sm">{{ rdv.date_heure|date:"d/m/Y H:i" }}</td>
+                    <td class="px-6 py-4">{{ rdv.motif }}</td>
+                    <td class="px-6 py-4"><span class="{% if rdv.statut == 'realise' %}bg-green-100 text-green-800{% elif rdv.statut == 'annule' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %} px-3 py-1 rounded-full text-sm">{{ rdv.get_statut_display }}</span></td>
+                    <td class="px-6 py-4 text-center space-x-2">
+                        <a href="{% url 'saint_joseph:rendez_vous_detail' rdv.id %}" class="text-blue-600 hover:text-blue-800"><i class="fas fa-eye"></i></a>
+                        <a href="{% url 'saint_joseph:rendez_vous_edit' rdv.id %}" class="text-green-600 hover:text-green-800"><i class="fas fa-edit"></i></a>
+                        {% if rdv.statut != 'annule' and rdv.statut != 'realise' %}
+                        <a href="{% url 'saint_joseph:rendez_vous_cancel' rdv.id %}" class="text-red-600 hover:text-red-800"><i class="fas fa-times"></i></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Aucun rendez-vous</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

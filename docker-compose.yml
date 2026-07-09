@@ -1,0 +1,100 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: saint-joseph-db
+    environment:
+      POSTGRES_DB: saint_joseph
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - saint-joseph-network
+
+  # Django Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: saint-joseph-app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py create_default_roles &&
+             gunicorn --bind 0.0.0.0:8000 
+                      --workers 4 
+                      --timeout 120
+                      --access-logfile - 
+                      --error-logfile - 
+                      archive.wsgi:application"
+    environment:
+      DEBUG: "False"
+      SECRET_KEY: "django-insecure-89n*fjzohvzh*y7!=4t*fniam!7!cg#ctycd3(2m3xwae5g$8r"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,saint-joseph.local"
+      USE_POSTGRES: "True"
+      DB_NAME: saint_joseph
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: db
+      DB_PORT: "5432"
+      SECURE_SSL_REDIRECT: "False"
+      SESSION_COOKIE_SECURE: "False"
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - logs_volume:/app/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - saint-joseph-network
+
+  # Redis Cache (Optional)
+  redis:
+    image: redis:7-alpine
+    container_name: saint-joseph-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - saint-joseph-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: saint-joseph-nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - app
+    networks:
+      - saint-joseph-network
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+  logs_volume:
+  redis_data:
+
+networks:
+  saint-joseph-network:
+    driver: bridge

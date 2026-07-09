@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Saint Joseph{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    {% if user.is_authenticated %}
+    {% include 'saint_joseph/includes/navbar.html' %}
+    {% endif %}
+
+    <div class="flex">
+        <!-- Sidebar -->
+        {% if user.is_authenticated %}
+        {% include 'saint_joseph/includes/sidebar.html' %}
+        {% endif %}
+
+        <!-- Main Content -->
+        <main class="{% if user.is_authenticated %}flex-1{% else %}w-full{% endif %}">
+            {% if messages %}
+            <div class="p-4">
+                {% for message in messages %}
+                <div class="mb-4 p-4 rounded-lg {% if message.tags %}alert-{{ message.tags }}{% else %}bg-blue-100 text-blue-700{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+    <script>
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function () {
+            const alerts = document.querySelectorAll('[class*="alert"]');
+            alerts.forEach(alert => {
+                alert.style.transition = 'opacity 0.5s ease-out';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+    </script>
+</body>
+
+</html>

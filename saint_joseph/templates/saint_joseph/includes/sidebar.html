@@ -1,0 +1,139 @@
+<!-- Sidebar -->
+<aside class="w-64 bg-gray-900 text-white h-screen fixed left-0 top-16 overflow-y-auto">
+    <div class="p-6 space-y-8">
+        <!-- Dashboard -->
+        <div>
+            <a href="{% url 'saint_joseph:dashboard' %}"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition">
+                <i class="fas fa-tachometer-alt w-5"></i>
+                <span>Tableau de Bord</span>
+            </a>
+        </div>
+
+        <!-- Patients Section -->
+        {% if user.profil_utilisateur.role in 'medecin,infirmier,admin' %}
+        <div>
+            <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Gestion Patients</h3>
+            <div class="space-y-2">
+                <a href="{% url 'saint_joseph:patient_list' %}"
+                    class="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-800 transition text-sm">
+                    <i class="fas fa-users w-4"></i>
+                    <span>Patients</span>
+                </a>
+                <a href="{% url 'saint_joseph:patient_create' %}"
+                    class="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-800 transition text-sm">
+                    <i class="fas fa-user-plus w-4"></i>
+                    <span>Ajouter Patient</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Consultations Section -->
+        {% if user.profil_utilisateur.role in 'medecin,admin' %}
+        <div>
+            <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Consultations</h3>
+            <div class="space-y-2">
+                <a href="{% url 'saint_joseph:consultation_list' %}"
+                    class="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-800 transition text-sm">
+                    <i class="fas fa-stethoscope w-4"></i>
+                    <span>Consultations</span>
+                </a>
+                <a href="{% url 'saint_joseph:consultation_create' %}"
+                    class="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-800 transition text-sm">
+                    <i class="fas fa-plus-circle w-4"></i>
+                    <span>Nouvelle Consultation</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Rendez-vous Section -->
+        {% if user.profil_utilisateur.role in 'medecin,infirmier,admin' %}
+        <div>
+            <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Rendez-vous</h3>
+            <div class="space-y-2">
+                <a href="{% url 'saint_joseph:rendez_vous_list' %}"
+                    class="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-800 transition text-sm">
+                    <i class="fas fa-calendar w-4"></i>
+                    <span>Rendez-vous</span>
+                </a>
+                <a href="{% url 'saint_joseph:rendez_vous_create' %}"
+                    class="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-800 transition text-sm">
+                    <i class="fas fa-calendar-plus w-4"></i>
+                    <span>Nouveau RDV</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Hospitalisations Section -->
+        {% if user.profil_utilisateur.role in 'medecin,infirmier,admin' %}
+        <div>
+            <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Hospitalisations</h3>
+            <div class="space-y-2">
+                <a href="{% url 'saint_joseph:hospitalisation_list' %}"
+                    class="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-800 transition text-sm">
+                    <i class="fas fa-bed w-4"></i>
+                    <span>Hospitalisations</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Dossiers Section -->
+        {% if user.profil_utilisateur.role in 'medecin,infirmier,admin' %}
+        <div>
+            <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Dossiers</h3>
+            <div class="space-y-2">
+                <a href="{% url 'saint_joseph:dossier_list' %}"
+                    class="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-800 transition text-sm">
+                    <i class="fas fa-folder-open w-4"></i>
+                    <span>Dossiers Médicaux</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Formulaires Section -->
+        {% if user.profil_utilisateur.role in 'medecin,infirmier,admin' %}
+        <div>
+            <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Formulaires</h3>
+            <div class="space-y-2">
+                <a href="{% url 'saint_joseph:formulaire_list' %}"
+                    class="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-800 transition text-sm">
+                    <i class="fas fa-file-alt w-4"></i>
+                    <span>Formulaires</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Archives Section -->
+        {% if user.profil_utilisateur.role in 'medecin,admin' %}
+        <div>
+            <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Archives</h3>
+            <div class="space-y-2">
+                <a href="{% url 'saint_joseph:archive_list' %}"
+                    class="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-800 transition text-sm">
+                    <i class="fas fa-archive w-4"></i>
+                    <span>Archives</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Admin Section -->
+        {% if user.profil_utilisateur.role == 'admin' %}
+        <div>
+            <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Administration</h3>
+            <div class="space-y-2">
+                <a href="/admin/" class="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-800 transition text-sm">
+                    <i class="fas fa-cog w-4"></i>
+                    <span>Panneau Admin</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</aside>
