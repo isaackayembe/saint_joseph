@@ -3,17 +3,101 @@ Django Admin Configuration pour Saint Joseph
 """
 
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User, Group
 from django.utils.html import format_html
 from .models import (
     Utilisateur, Patient, DossierMedical, Consultation,
     Diagnostic, Prescription, Formulaire, RendezVous,
     Hospitalisation, Archive
 )
+from .signals import sync_user_role, GROUP_ROLE_MAP
+
+
+# ============================================================================
+# INLINE : affiche le profil Utilisateur (rôle) dans la page User Django
+# ============================================================================
+
+class UtilisateurInline(admin.StackedInline):
+    model = Utilisateur
+    can_delete = False
+    verbose_name = "Profil Saint Joseph"
+    verbose_name_plural = "Profil Saint Joseph"
+    fields = ('role', 'telephone', 'adresse', 'est_actif')
+    extra = 0
+
+
+# ============================================================================
+# CUSTOM USER ADMIN — étend l'admin User Django standard
+# ============================================================================
+
+class CustomUserAdmin(BaseUserAdmin):
+    inlines = (UtilisateurInline,)
+    list_display = (
+        'username', 'email', 'first_name', 'last_name',
+        'get_role_badge', 'get_groupes', 'is_staff', 'is_superuser'
+    )
+    list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
+    actions = ['sync_roles_from_groups']
+
+    def get_role_badge(self, obj):
+        """Affiche le rôle actuel avec une couleur."""
+        try:
+            role = obj.profil_utilisateur.role
+        except Exception:
+            role = 'aucun'
+
+        colors = {
+            'admin':     '#dc2626',   # rouge
+            'medecin':   '#2563eb',   # bleu
+            'infirmier': '#059669',   # vert
+            'patient':   '#6b7280',   # gris
+            'aucun':     '#d97706',   # orange
+        }
+        labels = {
+            'admin':     '🔴 Admin',
+            'medecin':   '🔵 Médecin',
+            'infirmier': '🟢 Infirmier',
+            'patient':   '⚪ Patient',
+            'aucun':     '🟠 Sans profil',
+        }
+        color = colors.get(role, '#6b7280')
+        label = labels.get(role, role)
+        return format_html(
+            '<span style="background:{}; color:white; padding:2px 8px; '
+            'border-radius:4px; font-size:11px; font-weight:bold;">{}</span>',
+            color, label
+        )
+    get_role_badge.short_description = 'Rôle'
+    get_role_badge.allow_tags = True
+
+    def get_groupes(self, obj):
+        """Affiche les groupes de l'utilisateur."""
+        groupes = obj.groups.values_list('name', flat=True)
+        if groupes:
+            return ', '.join(groupes)
+        return '—'
+    get_groupes.short_description = 'Groupes'
+
+    @admin.action(description='🔄 Synchroniser les rôles depuis les groupes')
+    def sync_roles_from_groups(self, request, queryset):
+        """Action admin pour synchroniser les rôles de plusieurs users d'un coup."""
+        count = 0
+        for user in queryset:
+            sync_user_role(user)
+            count += 1
+        self.message_user(request, f"✅ {count} utilisateur(s) synchronisé(s).")
+
+
+# Désenregistrer l'admin User par défaut et enregistrer le notre
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)
+
 
 
 @admin.register(Utilisateur)
 class UtilisateurAdmin(admin.ModelAdmin):
-    list_display = ('get_nom_complet', 'role', 'est_actif', 'date_creation')
+    list_display = ('get_nom_complet', 'get_role_badge', 'get_groupes_user', 'est_actif', 'date_creation')
     list_filter = ('role', 'est_actif', 'date_creation')
     search_fields = ('user__first_name', 'user__last_name', 'user__email')
     readonly_fields = ('date_creation', 'date_modification')
@@ -32,10 +116,38 @@ class UtilisateurAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
-    
+
     def get_nom_complet(self, obj):
         return obj.user.get_full_name() or obj.user.username
     get_nom_complet.short_description = 'Nom Complet'
+
+    def get_role_badge(self, obj):
+        colors = {
+            'admin':     '#dc2626',
+            'medecin':   '#2563eb',
+            'infirmier': '#059669',
+            'patient':   '#6b7280',
+        }
+        labels = {
+            'admin':     '🔴 Admin',
+            'medecin':   '🔵 Médecin',
+            'infirmier': '🟢 Infirmier',
+            'patient':   '⚪ Patient',
+        }
+        color = colors.get(obj.role, '#6b7280')
+        label = labels.get(obj.role, obj.role)
+        return format_html(
+            '<span style="background:{}; color:white; padding:2px 8px; '
+            'border-radius:4px; font-size:11px; font-weight:bold;">{}</span>',
+            color, label
+        )
+    get_role_badge.short_description = 'Rôle'
+
+    def get_groupes_user(self, obj):
+        groupes = obj.user.groups.values_list('name', flat=True)
+        return ', '.join(groupes) if groupes else '—'
+    get_groupes_user.short_description = 'Groupes Django'
+
 
 
 @admin.register(Patient)

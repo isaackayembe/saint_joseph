@@ -11,7 +11,7 @@
         </div>
 
         <!-- Patients Section -->
-        {% if user.profil_utilisateur.role in 'medecin,infirmier,admin' %}
+        {% if user.is_authenticated %}
         <div>
             <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Gestion Patients</h3>
             <div class="space-y-2">
@@ -30,7 +30,7 @@
         {% endif %}
 
         <!-- Consultations Section -->
-        {% if user.profil_utilisateur.role in 'medecin,admin' %}
+        {% if user.is_authenticated %}
         <div>
             <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Consultations</h3>
             <div class="space-y-2">
@@ -49,7 +49,7 @@
         {% endif %}
 
         <!-- Rendez-vous Section -->
-        {% if user.profil_utilisateur.role in 'medecin,infirmier,admin' %}
+        {% if user.is_authenticated %}
         <div>
             <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Rendez-vous</h3>
             <div class="space-y-2">
@@ -68,7 +68,7 @@
         {% endif %}
 
         <!-- Hospitalisations Section -->
-        {% if user.profil_utilisateur.role in 'medecin,infirmier,admin' %}
+        {% if user.is_authenticated %}
         <div>
             <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Hospitalisations</h3>
             <div class="space-y-2">
@@ -82,7 +82,7 @@
         {% endif %}
 
         <!-- Dossiers Section -->
-        {% if user.profil_utilisateur.role in 'medecin,infirmier,admin' %}
+        {% if user.is_authenticated %}
         <div>
             <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Dossiers</h3>
             <div class="space-y-2">
@@ -96,7 +96,7 @@
         {% endif %}
 
         <!-- Formulaires Section -->
-        {% if user.profil_utilisateur.role in 'medecin,infirmier,admin' %}
+        {% if user.is_authenticated %}
         <div>
             <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Formulaires</h3>
             <div class="space-y-2">
@@ -110,7 +110,7 @@
         {% endif %}
 
         <!-- Archives Section -->
-        {% if user.profil_utilisateur.role in 'medecin,admin' %}
+        {% if user.is_authenticated %}
         <div>
             <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Archives</h3>
             <div class="space-y-2">
@@ -124,7 +124,7 @@
         {% endif %}
 
         <!-- Admin Section -->
-        {% if user.profil_utilisateur.role == 'admin' %}
+        {% if user.is_superuser %}
         <div>
             <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Administration</h3>
             <div class="space-y-2">

@@ -27,15 +27,10 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: saint-joseph-app
-    command: >
+    command: >-
       sh -c "python manage.py migrate &&
              python manage.py create_default_roles &&
-             gunicorn --bind 0.0.0.0:8000 
-                      --workers 4 
-                      --timeout 120
-                      --access-logfile - 
-                      --error-logfile - 
-                      archive.wsgi:application"
+             gunicorn --bind 0.0.0.0:8000 --workers 4 --timeout 120 --access-logfile - --error-logfile - archive.wsgi:application"
     environment:
       DEBUG: "False"
       SECRET_KEY: "django-insecure-89n*fjzohvzh*y7!=4t*fniam!7!cg#ctycd3(2m3xwae5g$8r"

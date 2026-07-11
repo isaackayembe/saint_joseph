@@ -6,8 +6,7 @@
 <div class="md:ml-64 p-8 mt-16">
     <div class="mb-8">
         <h2 class="text-3xl font-bold text-gray-800">Tableau de Bord</h2>
-        <p class="text-gray-600 mt-2">Bienvenue {{ user.get_full_name }}, vous êtes connecté en tant que
-            <span class="font-bold">{{ user.profil_utilisateur.get_role_display }}</span></p>
+        <p class="text-gray-600 mt-2">Bienvenue {{ user.get_full_name }}, vous êtes connecté</p>
     </div>
 
     <!-- Statistics Cards -->
@@ -120,7 +119,7 @@
     <div class="mt-8 bg-white rounded-lg shadow p-6">
         <h3 class="text-xl font-bold text-gray-800 mb-4">Actions Rapides</h3>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {% if user.profil_utilisateur.role in 'medecin,infirmier,admin' %}
+            {% if user.is_authenticated %}
             <a href="{% url 'saint_joseph:patient_create' %}"
                 class="p-4 border border-gray-200 rounded hover:bg-blue-50 text-center transition">
                 <i class="fas fa-user-plus text-blue-500 text-2xl mb-2"></i>
@@ -128,7 +127,7 @@
             </a>
             {% endif %}
 
-            {% if user.profil_utilisateur.role in 'medecin,admin' %}
+            {% if user.is_authenticated %}
             <a href="{% url 'saint_joseph:consultation_create' %}"
                 class="p-4 border border-gray-200 rounded hover:bg-green-50 text-center transition">
                 <i class="fas fa-stethoscope text-green-500 text-2xl mb-2"></i>
@@ -136,7 +135,7 @@
             </a>
             {% endif %}
 
-            {% if user.profil_utilisateur.role in 'medecin,infirmier,admin' %}
+            {% if user.is_authenticated %}
             <a href="{% url 'saint_joseph:rendez_vous_create' %}"
                 class="p-4 border border-gray-200 rounded hover:bg-orange-50 text-center transition">
                 <i class="fas fa-calendar-plus text-orange-500 text-2xl mb-2"></i>
