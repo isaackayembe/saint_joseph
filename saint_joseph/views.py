@@ -56,21 +56,26 @@ def user_login(request):
     return render(request, 'saint_joseph/auth/login.html')
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 def user_logout(request):
     """Vue de déconnexion"""
     logger.info(f"Utilisateur {request.user.username} déconnecté")
     logout(request)
     messages.success(request, "Vous avez été déconnecté")
-    return redirect('saint_joseph:login')
+    return redirect('login')
 
 
 @require_http_methods(["GET", "POST"])
 def user_register(request):
     """Vue d'inscription - Admin uniquement"""
-    if request.user.is_authenticated and request.user.profil_utilisateur.role != 'admin':
-        messages.error(request, "Seuls les administrateurs peuvent créer des comptes")
-        return redirect('saint_joseph:dashboard')
+    if request.user.is_authenticated:
+        try:
+            if request.user.profil_utilisateur.role != 'admin':
+                messages.error(request, "Seuls les administrateurs peuvent créer des comptes")
+                return redirect('saint_joseph:dashboard')
+        except:
+            messages.error(request, "Seuls les administrateurs peuvent créer des comptes")
+            return redirect('saint_joseph:dashboard')
     
     if request.method == 'POST':
         user_form = UserForm(request.POST)
@@ -79,7 +84,7 @@ def user_register(request):
             Utilisateur.objects.create(user=user, role='patient')
             logger.info(f"Nouvel utilisateur créé: {user.username}")
             messages.success(request, "Compte créé avec succès")
-            return redirect('saint_joseph:login')
+            return redirect('login')
         else:
             for field, errors in user_form.errors.items():
                 for error in errors:
@@ -94,7 +99,7 @@ def user_register(request):
 # DASHBOARD VIEW
 # ============================================================================
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 def dashboard(request):
     """Vue du tableau de bord principal"""
     
@@ -133,7 +138,7 @@ def dashboard(request):
 # PATIENT VIEWS
 # ============================================================================
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def patient_list(request):
     """Liste des patients avec recherche"""
@@ -163,7 +168,7 @@ def patient_list(request):
     return render(request, 'saint_joseph/patients/list.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def patient_create(request):
     """Créer un nouveau patient"""
@@ -219,7 +224,7 @@ def patient_create(request):
     return render(request, 'saint_joseph/patients/form.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def patient_detail(request, pk):
     """Détails d'un patient"""
@@ -235,7 +240,7 @@ def patient_detail(request, pk):
     return render(request, 'saint_joseph/patients/detail.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def patient_edit(request, pk):
     """Modifier un patient"""
@@ -262,7 +267,7 @@ def patient_edit(request, pk):
     return render(request, 'saint_joseph/patients/form.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @admin_required
 def patient_delete(request, pk):
     """Supprimer un patient"""
@@ -283,7 +288,7 @@ def patient_delete(request, pk):
 # CONSULTATION VIEWS
 # ============================================================================
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'admin')
 def consultation_list(request):
     """Liste des consultations"""
@@ -313,7 +318,7 @@ def consultation_list(request):
     return render(request, 'saint_joseph/consultations/list.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'admin')
 def consultation_create(request):
     """Créer une consultation"""
@@ -336,7 +341,7 @@ def consultation_create(request):
     return render(request, 'saint_joseph/consultations/form.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def consultation_detail(request, pk):
     """Détails de la consultation"""
@@ -354,7 +359,7 @@ def consultation_detail(request, pk):
     return render(request, 'saint_joseph/consultations/detail.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'admin')
 def consultation_edit(request, pk):
     """Modifier une consultation"""
@@ -383,7 +388,7 @@ def consultation_edit(request, pk):
 # DIAGNOSTIC VIEWS
 # ============================================================================
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'admin')
 def diagnostic_create(request, consultation_id):
     """Ajouter un diagnostic à une consultation"""
@@ -411,7 +416,7 @@ def diagnostic_create(request, consultation_id):
 # PRESCRIPTION VIEWS
 # ============================================================================
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'admin')
 def prescription_create(request, consultation_id):
     """Ajouter une prescription"""
@@ -439,7 +444,7 @@ def prescription_create(request, consultation_id):
 # FORMULAIRE VIEWS
 # ============================================================================
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def formulaire_list(request):
     """Liste des formulaires"""
@@ -457,7 +462,7 @@ def formulaire_list(request):
     return render(request, 'saint_joseph/formulaires/list.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'admin')
 def formulaire_create(request, consultation_id):
     """Créer un formulaire"""
@@ -481,7 +486,7 @@ def formulaire_create(request, consultation_id):
     return render(request, 'saint_joseph/formulaires/form.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def formulaire_detail(request, pk):
     """Détails d'un formulaire"""
@@ -490,7 +495,7 @@ def formulaire_detail(request, pk):
     return render(request, 'saint_joseph/formulaires/detail.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'admin')
 def formulaire_edit(request, pk):
     """Modifier un formulaire"""
@@ -513,7 +518,7 @@ def formulaire_edit(request, pk):
     return render(request, 'saint_joseph/formulaires/form.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def formulaire_print(request, pk):
     """Imprimer un formulaire"""
@@ -522,7 +527,7 @@ def formulaire_print(request, pk):
     return render(request, 'saint_joseph/formulaires/print.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'admin')
 def formulaire_archive(request, pk):
     """Archiver un formulaire"""
@@ -534,10 +539,19 @@ def formulaire_archive(request, pk):
         formulaire.date_archivage = timezone.now()
         formulaire.save()
         
+        try:
+            archiviste = request.user.profil_utilisateur
+        except:
+            from .models import Utilisateur
+            archiviste = Utilisateur.objects.create(
+                user=request.user,
+                role='patient'
+            )
+        
         Archive.objects.create(
             formulaire=formulaire,
             motif_archivage=motif,
-            archiviste=request.user.profil_utilisateur
+            archiviste=archiviste
         )
         
         logger.info(f"Formulaire archivé: {pk}")
@@ -552,7 +566,7 @@ def formulaire_archive(request, pk):
 # RENDEZ-VOUS VIEWS
 # ============================================================================
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def rendez_vous_list(request):
     """Liste des rendez-vous"""
@@ -571,7 +585,7 @@ def rendez_vous_list(request):
     return render(request, 'saint_joseph/rendez_vous/list.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def rendez_vous_create(request):
     """Créer un rendez-vous"""
@@ -592,7 +606,7 @@ def rendez_vous_create(request):
     return render(request, 'saint_joseph/rendez_vous/form.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def rendez_vous_detail(request, pk):
     """Détails d'un rendez-vous"""
@@ -601,7 +615,7 @@ def rendez_vous_detail(request, pk):
     return render(request, 'saint_joseph/rendez_vous/detail.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def rendez_vous_edit(request, pk):
     """Modifier un rendez-vous"""
@@ -624,7 +638,7 @@ def rendez_vous_edit(request, pk):
     return render(request, 'saint_joseph/rendez_vous/form.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def rendez_vous_cancel(request, pk):
     """Annuler un rendez-vous"""
@@ -645,7 +659,7 @@ def rendez_vous_cancel(request, pk):
 # HOSPITALISATION VIEWS
 # ============================================================================
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def hospitalisation_list(request):
     """Liste des hospitalisations"""
@@ -664,7 +678,7 @@ def hospitalisation_list(request):
     return render(request, 'saint_joseph/hospitalisations/list.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'admin')
 def hospitalisation_create(request):
     """Créer une hospitalisation"""
@@ -685,7 +699,7 @@ def hospitalisation_create(request):
     return render(request, 'saint_joseph/hospitalisations/form.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def hospitalisation_detail(request, pk):
     """Détails d'une hospitalisation"""
@@ -694,7 +708,7 @@ def hospitalisation_detail(request, pk):
     return render(request, 'saint_joseph/hospitalisations/detail.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'admin')
 def hospitalisation_edit(request, pk):
     """Modifier une hospitalisation"""
@@ -717,7 +731,7 @@ def hospitalisation_edit(request, pk):
     return render(request, 'saint_joseph/hospitalisations/form.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'admin')
 def hospitalisation_discharge(request, pk):
     """Sortir un patient de l'hôpital"""
@@ -739,7 +753,7 @@ def hospitalisation_discharge(request, pk):
 # DOSSIER MEDICAL VIEWS
 # ============================================================================
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def dossier_list(request):
     """Liste des dossiers médicaux"""
@@ -757,7 +771,7 @@ def dossier_list(request):
     return render(request, 'saint_joseph/dossiers/list.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
 def dossier_detail(request, patient_id):
     """Détails d'un dossier médical"""
@@ -776,7 +790,7 @@ def dossier_detail(request, patient_id):
 # ARCHIVE VIEWS
 # ============================================================================
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 @role_required('medecin', 'admin')
 def archive_list(request):
     """Liste des archives"""
@@ -799,18 +813,37 @@ def archive_list(request):
 # USER PROFILE VIEWS
 # ============================================================================
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 def user_profile(request):
     """Voir le profil de l'utilisateur"""
-    utilisateur = request.user.profil_utilisateur
+    try:
+        utilisateur = request.user.profil_utilisateur
+    except:
+        # Si l'utilisateur n'a pas de profil_utilisateur, le créer
+        from .models import Utilisateur
+        utilisateur = Utilisateur.objects.create(
+            user=request.user,
+            role='patient'
+        )
+        logger.warning(f"Profil utilisateur créé automatiquement pour {request.user.username}")
+    
     context = {'utilisateur': utilisateur}
     return render(request, 'saint_joseph/profile/view.html', context)
 
 
-@login_required(login_url='saint_joseph:login')
+@login_required(login_url='login')
 def user_profile_edit(request):
     """Modifier le profil de l'utilisateur"""
-    utilisateur = request.user.profil_utilisateur
+    try:
+        utilisateur = request.user.profil_utilisateur
+    except:
+        # Si l'utilisateur n'a pas de profil_utilisateur, le créer
+        from .models import Utilisateur
+        utilisateur = Utilisateur.objects.create(
+            user=request.user,
+            role='patient'
+        )
+        logger.warning(f"Profil utilisateur créé automatiquement pour {request.user.username}")
     
     if request.method == 'POST':
         form = UtilisateurForm(request.POST, instance=utilisateur)
