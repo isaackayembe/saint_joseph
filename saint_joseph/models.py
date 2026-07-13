@@ -78,6 +78,17 @@ class Patient(models.Model):
         verbose_name = 'Patient'
         verbose_name_plural = 'Patients'
     
+    def save(self, *args, **kwargs):
+        if not self.numero_patient:
+            # Récupérer le dernier patient par ID
+            last_patient = Patient.objects.all().order_by('id').last()
+            if last_patient:
+                next_id = last_patient.id + 1
+            else:
+                next_id = 1
+            self.numero_patient = f"PAT-{next_id:06d}"
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.numero_patient} - {self.utilisateur.user.get_full_name()}"
 
@@ -264,7 +275,7 @@ class Hospitalisation(models.Model):
 class Archive(models.Model):
     """Modèle Archive"""
     
-    formulaire = models.OneToOneField(Formulaire, on_delete=models.CASCADE, related_name='archive')
+    dossier_medical = models.OneToOneField(DossierMedical, on_delete=models.CASCADE, related_name='archive')
     date_archivage = models.DateTimeField(auto_now_add=True)
     motif_archivage = models.TextField()
     archiviste = models.ForeignKey(Utilisateur, on_delete=models.SET_NULL, null=True, related_name='archives_creees')
@@ -274,4 +285,4 @@ class Archive(models.Model):
         verbose_name_plural = 'Archives'
     
     def __str__(self):
-        return f"Archive - {self.formulaire.get_type_formulaire_display()} ({self.date_archivage.strftime('%Y-%m-%d')})"
+        return f"Archive - Dossier {self.dossier_medical.numero_dossier} ({self.date_archivage.strftime('%Y-%m-%d')})"

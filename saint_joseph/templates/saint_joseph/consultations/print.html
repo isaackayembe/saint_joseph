@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% if print_type == 'diagnostics' %}Fiche Diagnostic
+        {% elif print_type == 'prescriptions' %}Ordonnance Médicale
+        {% else %}Compte Rendu Consultation
+        {% endif %}
+        - Patient {{ patient.numero_patient }} - Saint Joseph
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            body {
+                background-color: white;
+                color: black;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="max-w-4xl mx-auto bg-white p-8 my-8 shadow-lg print:shadow-none print:my-0 print:p-0">
+        <!-- Clinic Header -->
+        <div class="flex justify-between items-center border-b-4 border-blue-600 pb-6 mb-8">
+            <div>
+                <h1 class="text-3xl font-extrabold text-blue-900">SAINT JOSEPH</h1>
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Système de Gestion Hospitalier</p>
+            </div>
+            <div class="text-right text-sm">
+                <p class="text-lg font-bold text-gray-800">
+                    {% if print_type == 'diagnostics' %}FICHE DIAGNOSTIC
+                    {% elif print_type == 'prescriptions' %}ORDONNANCE MÉDICALE
+                    {% else %}RAPPORT DE CONSULTATION
+                    {% endif %}
+                </p>
+                <p class="text-gray-500">Date d'édition : {{ current_time|date:"d/m/Y H:i" }}</p>
+            </div>
+        </div>
+
+        <!-- Main Body -->
+        <div class="space-y-8">
+            <!-- Patient Information Context (Always printed) -->
+            <div class="border border-gray-300 p-5 rounded-lg">
+                <h3 class="text-xs uppercase font-bold text-gray-500 tracking-wider mb-3">Informations du Patient</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                        <span class="text-gray-500 block">Nom complet :</span>
+                        <span class="font-bold text-gray-900">{{ patient.utilisateur.user.get_full_name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500 block">Numéro Patient :</span>
+                        <span class="font-mono font-bold">{{ patient.numero_patient }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500 block">Date de Naissance :</span>
+                        <span class="font-semibold">{{ patient.date_naissance|date:"d/m/Y" }} ({{ patient.get_sexe_display }})</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500 block">Groupe Sanguin :</span>
+                        <span class="font-semibold text-red-600">{{ patient.groupe_sanguin|default:"-" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Doctor & Consultation Info Context (Always printed) -->
+            <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border print:bg-none print:border-gray-250">
+                <div>
+                    <span class="text-gray-500 block">Médecin traitant :</span>
+                    <span class="font-bold">Dr. {{ consultation.medecin.user.get_full_name }}</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-gray-500 block">Date de la Consultation :</span>
+                    <span class="font-semibold">{{ consultation.date_consultation|date:"d/m/Y \à H:i" }}</span>
+                </div>
+            </div>
+
+            <!-- Diagnostics Content (Shown if 'all' or 'diagnostics') -->
+            {% if print_type == 'all' or print_type == 'diagnostics' %}
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-gray-800 border-b-2 border-red-500 pb-2">
+                    <i class="fas fa-disease mr-2 text-red-600 no-print"></i>Diagnostics posés
+                </h3>
+                {% if diagnostics %}
+                    <div class="space-y-3">
+                        {% for diagnostic in diagnostics %}
+                        <div class="border-l-4 border-red-500 bg-red-50/20 p-4 rounded print:bg-none print:border-gray-300">
+                            <span class="font-bold text-gray-900 text-base">{{ diagnostic.libelle }}</span>
+                            <p class="text-gray-700 text-sm mt-1">{{ diagnostic.description }}</p>
+                            <span class="text-xs text-gray-400 mt-2 block">Date du diagnostic : {{ diagnostic.date_diagnostic|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 text-sm italic">Aucun diagnostic n'a été enregistré pour cette consultation.</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Prescriptions Content (Shown if 'all' or 'prescriptions') -->
+            {% if print_type == 'all' or print_type == 'prescriptions' %}
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-gray-800 border-b-2 border-purple-500 pb-2">
+                    <i class="fas fa-pills mr-2 text-purple-600 no-print"></i>Ordonnance & Traitements
+                </h3>
+                {% if prescriptions %}
+                    <div class="space-y-4">
+                        {% for prescription in prescriptions %}
+                        <div class="border-b pb-4 last:border-0">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-bold text-gray-900 text-base">{{ prescription.traitement }}</span>
+                                <span class="text-sm font-semibold text-purple-900 print:text-black">Durée : {{ prescription.duree }}</span>
+                            </div>
+                            <p class="text-sm text-gray-700 font-medium">Posologie : {{ prescription.dose }}</p>
+                            {% if prescription.instructions %}
+                            <p class="text-xs text-gray-600 mt-2 bg-gray-50 p-2 rounded border border-gray-100 print:bg-none print:border-gray-200">
+                                <strong>Instructions complémentaires :</strong> {{ prescription.instructions }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 text-sm italic">Aucune prescription n'a été rédigée pour cette consultation.</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Signatures Section -->
+            <div class="pt-12 grid grid-cols-2 gap-8 text-sm">
+                <div class="text-center">
+                    <p class="text-gray-500 underline mb-16">Signature du Patient</p>
+                    <p class="font-semibold">{{ patient.utilisateur.user.get_full_name }}</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-gray-500 underline mb-16">Cachet & Signature du Médecin</p>
+                    <p class="font-semibold">Dr. {{ consultation.medecin.user.get_full_name }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="border-t-2 border-gray-200 mt-16 pt-6 text-center text-xs text-gray-400">
+            <p>Hôpital Saint Joseph - Service de Consultation Médicale externe</p>
+            <p class="mt-1">Document officiel confidentiel médical - Pour faire valoir ce que de droit</p>
+        </div>
+    </div>
+
+    <!-- Print Button Floating / Bar (No-Print) -->
+    <div class="no-print fixed bottom-6 right-6 flex gap-3">
+        <button onclick="window.close()" class="bg-gray-600 hover:bg-gray-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition">
+            <i class="fas fa-times mr-2"></i>Fermer
+        </button>
+        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition">
+            <i class="fas fa-print mr-2"></i>Imprimer
+        </button>
+    </div>
+
+    <script>
+        // Lancer l'impression automatiquement dès le chargement de la page
+        window.onload = function() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

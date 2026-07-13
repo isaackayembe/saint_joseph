@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiche Patient {{ patient.numero_patient }} - Saint Joseph</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            body {
+                background-color: white;
+                color: black;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="max-w-4xl mx-auto bg-white p-8 my-8 shadow-lg print:shadow-none print:my-0 print:p-0">
+        <!-- Clinic Header -->
+        <div class="flex justify-between items-center border-b-4 border-blue-600 pb-6 mb-8">
+            <div>
+                <h1 class="text-3xl font-extrabold text-blue-900">SAINT JOSEPH</h1>
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Système de Gestion Hospitalier</p>
+            </div>
+            <div class="text-right">
+                <p class="text-lg font-bold text-gray-800">Fiche Patient</p>
+                <p class="text-sm text-gray-500">Générée le {{ current_time|date:"d/m/Y H:i" }}</p>
+            </div>
+        </div>
+
+        <!-- Main Body -->
+        <div class="space-y-8">
+            <!-- Patient ID Header -->
+            <div class="bg-blue-50 p-6 rounded-xl border border-blue-150 flex justify-between items-center print:bg-gray-50 print:border-gray-200">
+                <div>
+                    <h2 class="text-2xl font-bold text-blue-900 print:text-black">{{ patient.utilisateur.user.get_full_name }}</h2>
+                    <p class="text-sm text-gray-600">ID Patient: <span class="font-mono font-bold">{{ patient.numero_patient }}</span></p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-600">Dossier Médical</p>
+                    <p class="text-lg font-mono font-bold text-blue-800 print:text-black">
+                        {% if dossier %}{{ dossier.numero_dossier }}{% else %}N/A{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Two-column grid -->
+            <div class="grid grid-cols-2 gap-8">
+                <!-- Column 1: Personal info -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-bold text-gray-800 border-b pb-2">Informations Personnelles</h3>
+                    <div class="grid grid-cols-2 gap-y-3 gap-x-2 text-sm">
+                        <span class="text-gray-500">Date de naissance :</span>
+                        <span class="font-semibold">{{ patient.date_naissance|date:"d/m/Y" }}</span>
+                        
+                        <span class="text-gray-500">Sexe :</span>
+                        <span class="font-semibold">{{ patient.get_sexe_display }}</span>
+                        
+                        <span class="text-gray-500">Groupe sanguin :</span>
+                        <span class="font-semibold">
+                            {% if patient.groupe_sanguin %}
+                                <span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs print:bg-none print:text-black print:font-bold">{{ patient.groupe_sanguin }}</span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                        
+                        <span class="text-gray-500">Date d'inscription :</span>
+                        <span class="font-semibold">{{ patient.date_inscription|date:"d/m/Y" }}</span>
+                    </div>
+                </div>
+
+                <!-- Column 2: Contact info -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-bold text-gray-800 border-b pb-2">Coordonnées</h3>
+                    <div class="grid grid-cols-2 gap-y-3 gap-x-2 text-sm">
+                        <span class="text-gray-500">Téléphone :</span>
+                        <span class="font-semibold">{{ patient.telephone }}</span>
+                        
+                        <span class="text-gray-500">Email :</span>
+                        <span class="font-semibold break-all">{{ patient.email }}</span>
+                        
+                        <span class="text-gray-500">Adresse :</span>
+                        <span class="font-semibold">{{ patient.adresse }}</span>
+                        
+                        <span class="text-gray-500">Ville :</span>
+                        <span class="font-semibold">{{ patient.ville }} ({{ patient.code_postal }})</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Contact -->
+            <div class="border border-yellow-200 bg-yellow-50/50 p-5 rounded-lg print:border-gray-200 print:bg-none">
+                <h3 class="text-sm uppercase font-bold text-yellow-800 tracking-wider mb-3 print:text-black">Contact d'Urgence</h3>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-gray-500 block">Nom complet :</span>
+                        <span class="font-semibold">{{ patient.personne_contact }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500 block">Téléphone :</span>
+                        <span class="font-semibold">{{ patient.telephone_contact }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Data -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-gray-800 border-b pb-2">Données Médicales</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="p-4 bg-red-50/30 rounded border border-red-100 print:bg-none print:border-gray-200">
+                        <span class="font-bold text-red-900 block print:text-black">Allergies :</span>
+                        <p class="text-gray-700 mt-1">{{ patient.allergies|default:"Aucune allergie déclarée." }}</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded border border-gray-150 print:bg-none print:border-gray-200">
+                        <span class="font-bold text-gray-800 block print:text-black">Antécédents médicaux :</span>
+                        <p class="text-gray-700 mt-1">{{ patient.antecedents_medicaux|default:"Aucun antécédent médical déclaré." }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consultations Section -->
+            <div class="space-y-4 page-break-before">
+                <h3 class="text-lg font-bold text-gray-800 border-b pb-2">Historique des Consultations</h3>
+                {% if consultations %}
+                    <div class="space-y-4">
+                        {% for consultation in consultations %}
+                        <div class="border border-gray-250 p-4 rounded-lg text-sm space-y-2">
+                            <div class="flex justify-between items-center bg-gray-50 p-2 rounded print:bg-none print:border-b">
+                                <span class="font-bold">Consultation du {{ consultation.date_consultation|date:"d/m/Y H:i" }}</span>
+                                <span class="text-xs uppercase font-semibold text-gray-500">Statut : {{ consultation.get_statut_display }}</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <span class="text-gray-500">Médecin :</span>
+                                    <span class="font-medium">Dr. {{ consultation.medecin.user.get_full_name }}</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Motif :</span>
+                                    <span class="font-medium">{{ consultation.motif }}</span>
+                                </div>
+                            </div>
+                            {% if consultation.observations %}
+                            <div>
+                                <span class="text-gray-500 block">Observations :</span>
+                                <p class="text-gray-700 mt-1 text-xs">{{ consultation.observations }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Diagnostics -->
+                            {% if consultation.diagnostics.all %}
+                            <div class="mt-2">
+                                <span class="text-gray-600 font-bold block text-xs">Diagnostic(s) :</span>
+                                <ul class="list-disc list-inside text-xs text-gray-700 space-y-1 mt-1">
+                                    {% for diag in consultation.diagnostics.all %}
+                                    <li><span class="font-semibold">{{ diag.libelle }}</span> - {{ diag.description }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+
+                            <!-- Prescriptions -->
+                            {% if consultation.prescriptions.all %}
+                            <div class="mt-2">
+                                <span class="text-gray-600 font-bold block text-xs">Prescription(s) :</span>
+                                <ul class="list-disc list-inside text-xs text-gray-700 space-y-1 mt-1">
+                                    {% for pres in consultation.prescriptions.all %}
+                                    <li><span class="font-semibold">{{ pres.traitement }}</span> ({{ pres.dose }}) pendant {{ pres.duree }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 text-sm text-center py-4">Aucune consultation enregistrée.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="border-t-2 border-gray-200 mt-12 pt-6 text-center text-xs text-gray-400">
+            <p>Hôpital Saint Joseph - Service d'Archives et de Gestion des Patients</p>
+            <p class="mt-1">Document confidentiel - Réservé à l'usage médical</p>
+        </div>
+    </div>
+
+    <!-- Print Button Floating / Bar (No-Print) -->
+    <div class="no-print fixed bottom-6 right-6 flex gap-3">
+        <button onclick="window.close()" class="bg-gray-600 hover:bg-gray-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition">
+            <i class="fas fa-times mr-2"></i>Fermer
+        </button>
+        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition">
+            <i class="fas fa-print mr-2"></i>Imprimer
+        </button>
+    </div>
+
+    <script>
+        // Lancer l'impression automatiquement dès le chargement de la page
+        window.onload = function() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

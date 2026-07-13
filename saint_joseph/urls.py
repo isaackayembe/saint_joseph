@@ -22,12 +22,14 @@ urlpatterns = [
     path('patients/<int:pk>/', views.patient_detail, name='patient_detail'),
     path('patients/<int:pk>/edit/', views.patient_edit, name='patient_edit'),
     path('patients/<int:pk>/delete/', views.patient_delete, name='patient_delete'),
+    path('patients/<int:pk>/print/', views.patient_print, name='patient_print'),
     
     # Consultations
     path('consultations/', views.consultation_list, name='consultation_list'),
     path('consultations/create/', views.consultation_create, name='consultation_create'),
     path('consultations/<int:pk>/', views.consultation_detail, name='consultation_detail'),
     path('consultations/<int:pk>/edit/', views.consultation_edit, name='consultation_edit'),
+    path('consultations/<int:pk>/print/', views.consultation_print, name='consultation_print'),
     
     # Diagnostics
     path('diagnostics/create/<int:consultation_id>/', views.diagnostic_create, name='diagnostic_create'),
@@ -41,7 +43,6 @@ urlpatterns = [
     path('formulaires/<int:pk>/', views.formulaire_detail, name='formulaire_detail'),
     path('formulaires/<int:pk>/edit/', views.formulaire_edit, name='formulaire_edit'),
     path('formulaires/<int:pk>/print/', views.formulaire_print, name='formulaire_print'),
-    path('formulaires/<int:pk>/archive/', views.formulaire_archive, name='formulaire_archive'),
     
     # Rendez-vous
     path('rendez-vous/', views.rendez_vous_list, name='rendez_vous_list'),
@@ -60,6 +61,7 @@ urlpatterns = [
     # Dossiers Médicaux
     path('dossiers/', views.dossier_list, name='dossier_list'),
     path('dossiers/<int:patient_id>/', views.dossier_detail, name='dossier_detail'),
+    path('dossiers/<int:pk>/archive/', views.dossier_archive, name='dossier_archive'),
     
     # Archives
     path('archives/', views.archive_list, name='archive_list'),

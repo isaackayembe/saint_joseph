@@ -15,15 +15,11 @@ class PatientForm(forms.ModelForm):
     class Meta:
         model = Patient
         fields = (
-            'numero_patient', 'date_naissance', 'sexe', 'groupe_sanguin',
+            'date_naissance', 'sexe', 'groupe_sanguin',
             'telephone', 'email', 'adresse', 'ville', 'code_postal',
             'personne_contact', 'telephone_contact', 'allergies', 'antecedents_medicaux'
         )
         widgets = {
-            'numero_patient': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500',
-                'placeholder': 'PAT-001'
-            }),
             'date_naissance': forms.DateInput(attrs={
                 'class': 'w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500',
                 'type': 'date'
@@ -169,9 +165,9 @@ class ArchiveForm(forms.ModelForm):
     
     class Meta:
         model = Archive
-        fields = ('formulaire', 'motif_archivage', 'archiviste')
+        fields = ('dossier_medical', 'motif_archivage', 'archiviste')
         widgets = {
-            'formulaire': forms.Select(attrs={'class': 'w-full px-4 py-2 border rounded'}),
+            'dossier_medical': forms.Select(attrs={'class': 'w-full px-4 py-2 border rounded'}),
             'motif_archivage': forms.Textarea(attrs={'class': 'w-full px-4 py-2 border rounded', 'rows': 3}),
             'archiviste': forms.Select(attrs={'class': 'w-full px-4 py-2 border rounded'}),
         }

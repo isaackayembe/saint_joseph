@@ -27,11 +27,13 @@ if not User.objects.filter(username='admin').exists():
         password='Admin@123456'
     )
     
-    # Creer le profil utilisateur
-    Utilisateur.objects.create(
+    # Creer le profil utilisateur (ou le mettre a jour s'il a ete cree par le signal)
+    Utilisateur.objects.update_or_create(
         user=user,
-        role='admin',
-        telephone='+243999999999'
+        defaults={
+            'role': 'admin',
+            'telephone': '+243999999999'
+        }
     )
     
     print("[OK] Superuser cree: admin / Admin@123456")
@@ -52,10 +54,12 @@ for role, first, last in roles:
             last_name=last
         )
         
-        Utilisateur.objects.create(
+        Utilisateur.objects.update_or_create(
             user=user,
-            role=role,
-            telephone='+243999999999'
+            defaults={
+                'role': role,
+                'telephone': '+243999999999'
+            }
         )
         
         print(f"[OK] Utilisateur cree: {username} ({role})")

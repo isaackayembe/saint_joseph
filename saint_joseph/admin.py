@@ -398,14 +398,14 @@ class HospitalisationAdmin(admin.ModelAdmin):
 
 @admin.register(Archive)
 class ArchiveAdmin(admin.ModelAdmin):
-    list_display = ('id', 'get_formulaire', 'get_archiviste', 'date_archivage')
+    list_display = ('id', 'get_dossier', 'get_archiviste', 'date_archivage')
     list_filter = ('date_archivage', 'archiviste')
-    search_fields = ('formulaire__consultation__dossier_medical__patient__numero_patient',)
+    search_fields = ('dossier_medical__numero_dossier', 'dossier_medical__patient__numero_patient')
     readonly_fields = ('date_archivage',)
     
     fieldsets = (
-        ('Formulaire Archivé', {
-            'fields': ('formulaire',)
+        ('Dossier Médical Archivé', {
+            'fields': ('dossier_medical',)
         }),
         ('Archivage', {
             'fields': ('archiviste', 'motif_archivage')
@@ -416,9 +416,9 @@ class ArchiveAdmin(admin.ModelAdmin):
         }),
     )
     
-    def get_formulaire(self, obj):
-        return f"{obj.formulaire.get_type_formulaire_display()}"
-    get_formulaire.short_description = 'Type Formulaire'
+    def get_dossier(self, obj):
+        return f"{obj.dossier_medical.numero_dossier} ({obj.dossier_medical.patient.utilisateur.user.get_full_name()})"
+    get_dossier.short_description = 'Dossier Médical'
     
     def get_archiviste(self, obj):
         return obj.archiviste.user.get_full_name() if obj.archiviste else 'N/A'

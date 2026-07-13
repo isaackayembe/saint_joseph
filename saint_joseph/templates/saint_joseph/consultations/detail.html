@@ -11,6 +11,9 @@
             <p class="text-gray-600 mt-2">{{ consultation.motif }}</p>
         </div>
         <div class="space-x-2">
+            <a href="{% url 'saint_joseph:consultation_print' consultation.id %}?type=all" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-print mr-2"></i>Imprimer Fiche
+            </a>
             <a href="{% url 'saint_joseph:consultation_edit' consultation.id %}" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition">
                 <i class="fas fa-edit mr-2"></i>Modifier
             </a>
@@ -75,9 +78,16 @@
                     <h3 class="text-xl font-bold text-gray-800">
                         <i class="fas fa-disease mr-2 text-red-600"></i>Diagnostics
                     </h3>
-                    <a href="{% url 'saint_joseph:diagnostic_create' consultation.id %}" class="text-sm bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition">
-                        <i class="fas fa-plus mr-1"></i>Ajouter
-                    </a>
+                    <div class="flex gap-2">
+                        {% if diagnostics %}
+                        <a href="{% url 'saint_joseph:consultation_print' consultation.id %}?type=diagnostics" target="_blank" class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
+                            <i class="fas fa-print mr-1"></i>Imprimer
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'saint_joseph:diagnostic_create' consultation.id %}" class="text-sm bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition">
+                            <i class="fas fa-plus mr-1"></i>Ajouter
+                        </a>
+                    </div>
                 </div>
                 {% if diagnostics %}
                     <div class="space-y-3">
@@ -100,9 +110,16 @@
                     <h3 class="text-xl font-bold text-gray-800">
                         <i class="fas fa-pills mr-2 text-purple-600"></i>Prescriptions
                     </h3>
-                    <a href="{% url 'saint_joseph:prescription_create' consultation.id %}" class="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition">
-                        <i class="fas fa-plus mr-1"></i>Ajouter
-                    </a>
+                    <div class="flex gap-2">
+                        {% if prescriptions %}
+                        <a href="{% url 'saint_joseph:consultation_print' consultation.id %}?type=prescriptions" target="_blank" class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
+                            <i class="fas fa-print mr-1"></i>Imprimer
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'saint_joseph:prescription_create' consultation.id %}" class="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition">
+                            <i class="fas fa-plus mr-1"></i>Ajouter
+                        </a>
+                    </div>
                 </div>
                 {% if prescriptions %}
                     <div class="space-y-3">

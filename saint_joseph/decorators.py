@@ -27,11 +27,12 @@ def get_user_role(user):
     except Exception:
         # Créer automatiquement le profil s'il n'existe pas
         from .models import Utilisateur
-        utilisateur = Utilisateur.objects.create(
+        utilisateur, created = Utilisateur.objects.get_or_create(
             user=user,
-            role='patient'
+            defaults={'role': 'patient'}
         )
-        logger.warning(f"Profil créé automatiquement pour {user.username} avec rôle 'patient'")
+        if created:
+            logger.warning(f"Profil créé automatiquement pour {user.username} avec rôle 'patient'")
         return utilisateur.role
 
 

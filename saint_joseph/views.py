@@ -81,7 +81,7 @@ def user_register(request):
         user_form = UserForm(request.POST)
         if user_form.is_valid():
             user = user_form.save()
-            Utilisateur.objects.create(user=user, role='patient')
+            Utilisateur.objects.get_or_create(user=user, defaults={'role': 'patient'})
             logger.info(f"Nouvel utilisateur créé: {user.username}")
             messages.success(request, "Compte créé avec succès")
             return redirect('login')
@@ -194,7 +194,10 @@ def patient_create(request):
                 password=uuid.uuid4().hex[:12]  # Mot de passe temporaire
             )
             
-            utilisateur = Utilisateur.objects.create(user=user, role='patient')
+            utilisateur, created = Utilisateur.objects.get_or_create(
+                user=user,
+                defaults={'role': 'patient'}
+            )
             
             patient = patient_form.save(commit=False)
             patient.utilisateur = utilisateur
@@ -242,6 +245,23 @@ def patient_detail(request, pk):
 
 @login_required(login_url='login')
 @role_required('medecin', 'infirmier', 'admin')
+def patient_print(request, pk):
+    """Imprimer les informations d'un patient"""
+    patient = get_object_or_404(Patient, pk=pk)
+    dossier = getattr(patient, 'dossier_medical', None)
+    consultations = dossier.consultations.all().order_by('-date_consultation') if dossier else []
+    
+    context = {
+        'patient': patient,
+        'dossier': dossier,
+        'consultations': consultations,
+        'current_time': timezone.now(),
+    }
+    return render(request, 'saint_joseph/patients/print.html', context)
+
+
+@login_required(login_url='login')
+@role_required('medecin', 'infirmier', 'admin')
 def patient_edit(request, pk):
     """Modifier un patient"""
     patient = get_object_or_404(Patient, pk=pk)
@@ -249,7 +269,14 @@ def patient_edit(request, pk):
     if request.method == 'POST':
         form = PatientForm(request.POST, instance=patient)
         if form.is_valid():
-            form.save()
+            patient = form.save()
+            
+            # Mettre à jour l'utilisateur lié (first_name et last_name)
+            user = patient.utilisateur.user
+            user.first_name = request.POST.get('first_name', '')
+            user.last_name = request.POST.get('last_name', '')
+            user.save()
+            
             logger.info(f"Patient modifié: {patient.numero_patient}")
             messages.success(request, "Patient modifié avec succès")
             return redirect('saint_joseph:patient_detail', pk=pk)
@@ -259,7 +286,7 @@ def patient_edit(request, pk):
         form = PatientForm(instance=patient)
     
     context = {
-        'form': form,
+        'patient_form': form,
         'patient': patient,
         'title': f'Modifier {patient.numero_patient}',
         'is_edit': True
@@ -357,6 +384,28 @@ def consultation_detail(request, pk):
         'formulaires': formulaires,
     }
     return render(request, 'saint_joseph/consultations/detail.html', context)
+
+
+@login_required(login_url='login')
+@role_required('medecin', 'infirmier', 'admin')
+def consultation_print(request, pk):
+    """Imprimer les éléments d'une consultation (diagnostic, prescription ou complet)"""
+    consultation = get_object_or_404(Consultation, pk=pk)
+    print_type = request.GET.get('type', 'all')
+    
+    patient = consultation.dossier_medical.patient
+    diagnostics = consultation.diagnostics.all()
+    prescriptions = consultation.prescriptions.all()
+    
+    context = {
+        'consultation': consultation,
+        'patient': patient,
+        'diagnostics': diagnostics,
+        'prescriptions': prescriptions,
+        'print_type': print_type,
+        'current_time': timezone.now(),
+    }
+    return render(request, 'saint_joseph/consultations/print.html', context)
 
 
 @login_required(login_url='login')
@@ -529,37 +578,37 @@ def formulaire_print(request, pk):
 
 @login_required(login_url='login')
 @role_required('medecin', 'admin')
-def formulaire_archive(request, pk):
-    """Archiver un formulaire"""
-    formulaire = get_object_or_404(Formulaire, pk=pk)
+def dossier_archive(request, pk):
+    """Archiver un dossier médical"""
+    dossier = get_object_or_404(DossierMedical, pk=pk)
     
     if request.method == 'POST':
         motif = request.POST.get('motif_archivage')
-        formulaire.statut = 'archive'
-        formulaire.date_archivage = timezone.now()
-        formulaire.save()
+        dossier.est_actif = False
+        dossier.save()
         
         try:
             archiviste = request.user.profil_utilisateur
-        except:
+        except Exception:
             from .models import Utilisateur
-            archiviste = Utilisateur.objects.create(
+            archiviste, created = Utilisateur.objects.get_or_create(
                 user=request.user,
-                role='patient'
+                defaults={'role': 'patient'}
             )
         
+        # Enregistrer l'archive
         Archive.objects.create(
-            formulaire=formulaire,
+            dossier_medical=dossier,
             motif_archivage=motif,
             archiviste=archiviste
         )
         
-        logger.info(f"Formulaire archivé: {pk}")
-        messages.success(request, "Formulaire archivé")
-        return redirect('saint_joseph:formulaire_list')
+        logger.info(f"Dossier médical archivé: {dossier.numero_dossier}")
+        messages.success(request, f"Dossier médical {dossier.numero_dossier} archivé")
+        return redirect('saint_joseph:dossier_list')
     
-    context = {'formulaire': formulaire}
-    return render(request, 'saint_joseph/formulaires/archive_confirm.html', context)
+    context = {'dossier': dossier}
+    return render(request, 'saint_joseph/dossiers/archive_confirm.html', context)
 
 
 # ============================================================================
@@ -795,7 +844,7 @@ def dossier_detail(request, patient_id):
 def archive_list(request):
     """Liste des archives"""
     archives = Archive.objects.select_related(
-        'formulaire__consultation__dossier_medical__patient',
+        'dossier_medical__patient__utilisateur__user',
         'archiviste__user'
     ).order_by('-date_archivage')
     
@@ -819,11 +868,10 @@ def user_profile(request):
     try:
         utilisateur = request.user.profil_utilisateur
     except:
-        # Si l'utilisateur n'a pas de profil_utilisateur, le créer
         from .models import Utilisateur
-        utilisateur = Utilisateur.objects.create(
+        utilisateur, created = Utilisateur.objects.get_or_create(
             user=request.user,
-            role='patient'
+            defaults={'role': 'patient'}
         )
         logger.warning(f"Profil utilisateur créé automatiquement pour {request.user.username}")
     
@@ -837,11 +885,10 @@ def user_profile_edit(request):
     try:
         utilisateur = request.user.profil_utilisateur
     except:
-        # Si l'utilisateur n'a pas de profil_utilisateur, le créer
         from .models import Utilisateur
-        utilisateur = Utilisateur.objects.create(
+        utilisateur, created = Utilisateur.objects.get_or_create(
             user=request.user,
-            role='patient'
+            defaults={'role': 'patient'}
         )
         logger.warning(f"Profil utilisateur créé automatiquement pour {request.user.username}")
     

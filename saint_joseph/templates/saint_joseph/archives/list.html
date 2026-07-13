@@ -2,14 +2,14 @@
 {% block title %}Archives - Saint Joseph{% endblock %}
 {% block content %}
 <div class="md:ml-64 p-8 mt-16">
-    <h2 class="text-3xl font-bold text-gray-800 mb-8">Archives Formulaires ({{ page_obj.paginator.count }})</h2>
+    <h2 class="text-3xl font-bold text-gray-800 mb-8">Dossiers Médicaux Archivés ({{ page_obj.paginator.count }})</h2>
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <table class="w-full">
             <thead class="bg-gray-100 border-b-2 border-gray-300">
                 <tr>
-                    <th class="px-6 py-3 text-left">Type</th>
+                    <th class="px-6 py-3 text-left">N° Dossier</th>
                     <th class="px-6 py-3 text-left">Patient</th>
-                    <th class="px-6 py-3 text-left">Motif</th>
+                    <th class="px-6 py-3 text-left">Motif d'archivage</th>
                     <th class="px-6 py-3 text-left">Archivé le</th>
                     <th class="px-6 py-3 text-left">Archiviste</th>
                     <th class="px-6 py-3 text-center">Actions</th>
@@ -18,13 +18,16 @@
             <tbody>
                 {% for archive in page_obj %}
                 <tr class="border-b hover:bg-gray-50">
-                    <td class="px-6 py-4"><span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">{{ archive.formulaire.get_type_formulaire_display }}</span></td>
-                    <td class="px-6 py-4">{{ archive.formulaire.consultation.dossier_medical.patient.numero_patient }}</td>
+                    <td class="px-6 py-4 font-mono font-semibold">{{ archive.dossier_medical.numero_dossier }}</td>
+                    <td class="px-6 py-4">
+                        <p class="font-semibold">{{ archive.dossier_medical.patient.utilisateur.user.get_full_name }}</p>
+                        <p class="text-xs text-gray-500">{{ archive.dossier_medical.patient.numero_patient }}</p>
+                    </td>
                     <td class="px-6 py-4 text-sm">{{ archive.motif_archivage|truncatewords:10 }}</td>
                     <td class="px-6 py-4 text-sm">{{ archive.date_archivage|date:"d/m/Y" }}</td>
                     <td class="px-6 py-4">{{ archive.archiviste.user.get_full_name }}</td>
                     <td class="px-6 py-4 text-center">
-                        <a href="{% url 'saint_joseph:formulaire_detail' archive.formulaire.id %}" class="text-blue-600 hover:text-blue-800">
+                        <a href="{% url 'saint_joseph:dossier_detail' archive.dossier_medical.patient.id %}" class="text-blue-600 hover:text-blue-800" title="Voir le dossier">
                             <i class="fas fa-eye"></i>
                         </a>
                     </td>
