@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from django.db.models import Q
+from django.core.exceptions import PermissionDenied
 from datetime import timedelta
 import logging
 
@@ -27,6 +28,16 @@ from .forms import (
 from .decorators import role_required, admin_required, medecin_required, infirmier_required
 
 logger = logging.getLogger(__name__)
+
+
+def assert_dossier_active(dossier):
+    if not dossier.est_actif:
+        raise PermissionDenied("Ce dossier est archivé et ne peut plus être modifié.")
+
+
+def assert_consultation_active(consultation):
+    if not consultation.dossier_medical.est_actif:
+        raise PermissionDenied("Cette consultation appartient à un dossier archivé.")
 
 
 # ============================================================================
@@ -104,19 +115,21 @@ def dashboard(request):
     """Vue du tableau de bord principal"""
     
     # Statistiques générales
-    today = timezone.now().date()
+    today = timezone.localdate()
+    now = timezone.now()
     context = {
         'total_patients': Patient.objects.count(),
         'consultations_today': Consultation.objects.filter(
             date_consultation__date=today
         ).count(),
         'rdv_prevus': RendezVous.objects.filter(
-            date_heure__gte=timezone.now(),
+            date_heure__gte=now,
             statut__in=['planifie', 'confirme']
         ).count(),
         'hospitalisees': Hospitalisation.objects.filter(
             statut__in=['admission', 'hospitalisee'],
-            date_sortie__isnull=True
+            date_sortie__isnull=True,
+            date_admission__lte=now
         ).count(),
         'recent_consultations': Consultation.objects.select_related(
             'dossier_medical__patient__utilisateur__user',
@@ -352,10 +365,14 @@ def consultation_create(request):
     if request.method == 'POST':
         form = ConsultationForm(request.POST)
         if form.is_valid():
-            consultation = form.save()
-            logger.info(f"Consultation créée: {consultation.id}")
-            messages.success(request, "Consultation créée avec succès")
-            return redirect('saint_joseph:consultation_detail', pk=consultation.id)
+            dossier = form.cleaned_data['dossier_medical']
+            if not dossier.est_actif:
+                messages.error(request, "Impossible de créer une consultation sur un dossier archivé.")
+            else:
+                consultation = form.save()
+                logger.info(f"Consultation créée: {consultation.id}")
+                messages.success(request, "Consultation créée avec succès")
+                return redirect('saint_joseph:consultation_detail', pk=consultation.id)
         else:
             messages.error(request, "Erreur lors de la création")
     else:
@@ -413,6 +430,7 @@ def consultation_print(request, pk):
 def consultation_edit(request, pk):
     """Modifier une consultation"""
     consultation = get_object_or_404(Consultation, pk=pk)
+    assert_consultation_active(consultation)
     
     if request.method == 'POST':
         form = ConsultationForm(request.POST, instance=consultation)
@@ -442,6 +460,7 @@ def consultation_edit(request, pk):
 def diagnostic_create(request, consultation_id):
     """Ajouter un diagnostic à une consultation"""
     consultation = get_object_or_404(Consultation, pk=consultation_id)
+    assert_consultation_active(consultation)
     
     if request.method == 'POST':
         form = DiagnosticForm(request.POST)
@@ -470,6 +489,7 @@ def diagnostic_create(request, consultation_id):
 def prescription_create(request, consultation_id):
     """Ajouter une prescription"""
     consultation = get_object_or_404(Consultation, pk=consultation_id)
+    assert_consultation_active(consultation)
     
     if request.method == 'POST':
         form = PrescriptionForm(request.POST)
@@ -806,7 +826,7 @@ def hospitalisation_discharge(request, pk):
 @role_required('medecin', 'infirmier', 'admin')
 def dossier_list(request):
     """Liste des dossiers médicaux"""
-    dossiers = DossierMedical.objects.select_related(
+    dossiers = DossierMedical.objects.filter(est_actif=True).select_related(
         'patient__utilisateur__user'
     ).order_by('-date_ouverture')
     

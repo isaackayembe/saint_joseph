@@ -65,6 +65,11 @@ class PatientForm(forms.ModelForm):
 
 class ConsultationForm(forms.ModelForm):
     """Formulaire de création/modification de consultation"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'dossier_medical' in self.fields:
+            self.fields['dossier_medical'].queryset = DossierMedical.objects.filter(est_actif=True)
     
     class Meta:
         model = Consultation

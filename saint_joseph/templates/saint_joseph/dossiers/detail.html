@@ -19,6 +19,13 @@
         </div>
     </div>
 
+    {% if not dossier.est_actif %}
+    <div class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">
+        <p class="font-semibold">Ce dossier est archivé.</p>
+        <p class="text-sm text-red-700">Les nouvelles consultations, diagnostics, prescriptions ou formulaires ne peuvent plus être ajoutés tant que le dossier n'est pas restauré.</p>
+    </div>
+    {% endif %}
+
     <!-- Dossier Info -->
     <div class="bg-white rounded-lg shadow p-6 mb-6">
         <h3 class="text-lg font-bold text-gray-800 mb-4">Informations Dossier</h3>
@@ -50,9 +57,11 @@
     <div class="bg-white rounded-lg shadow p-6">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-gray-800">Historique des Consultations ({{ consultations.count }})</h3>
+            {% if dossier.est_actif %}
             <a href="{% url 'saint_joseph:consultation_create' %}" class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
                 <i class="fas fa-plus mr-1"></i>Nouvelle
             </a>
+            {% endif %}
         </div>
         {% if consultations %}
             <div class="space-y-4">
