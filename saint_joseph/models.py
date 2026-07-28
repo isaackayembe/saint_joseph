@@ -275,7 +275,7 @@ class Hospitalisation(models.Model):
 class Archive(models.Model):
     """Modèle Archive"""
     
-    dossier_medical = models.OneToOneField(DossierMedical, on_delete=models.CASCADE, related_name='archive')
+    dossier_medical = models.ForeignKey(DossierMedical, on_delete=models.CASCADE, related_name='archive')
     date_archivage = models.DateTimeField(auto_now_add=True)
     motif_archivage = models.TextField()
     archiviste = models.ForeignKey(Utilisateur, on_delete=models.SET_NULL, null=True, related_name='archives_creees')

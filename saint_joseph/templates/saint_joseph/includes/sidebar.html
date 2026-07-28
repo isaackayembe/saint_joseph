@@ -95,19 +95,6 @@
         </div>
         {% endif %}
 
-        <!-- Formulaires Section -->
-        {% if user.is_authenticated %}
-        <div>
-            <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Formulaires</h3>
-            <div class="space-y-2">
-                <a href="{% url 'saint_joseph:formulaire_list' %}"
-                    class="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-800 transition text-sm">
-                    <i class="fas fa-file-alt w-4"></i>
-                    <span>Formulaires</span>
-                </a>
-            </div>
-        </div>
-        {% endif %}
 
         <!-- Archives Section -->
         {% if user.is_authenticated %}
@@ -123,17 +110,7 @@
         </div>
         {% endif %}
 
-        <!-- Admin Section -->
-        {% if user.is_superuser %}
-        <div>
-            <h3 class="text-xs uppercase font-bold text-gray-400 mb-4">Administration</h3>
-            <div class="space-y-2">
-                <a href="/admin/" class="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-800 transition text-sm">
-                    <i class="fas fa-cog w-4"></i>
-                    <span>Panneau Admin</span>
-                </a>
-            </div>
-        </div>
-        {% endif %}
+   
+    
     </div>
 </aside>

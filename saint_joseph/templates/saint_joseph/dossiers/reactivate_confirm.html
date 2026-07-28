@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Réactiver Dossier Médical - Saint Joseph{% endblock %}
+{% block content %}
+<div class="md:ml-64 p-8 mt-16 flex items-center justify-center min-h-[calc(100vh-8rem)]">
+    <div class="max-w-md w-full">
+        <div class="bg-white rounded-lg shadow-xl p-8 text-center border-2 border-green-100">
+            <i class="fas fa-redo text-green-600 text-5xl mb-4"></i>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Réactiver le Dossier Médical</h2>
+            <p class="text-gray-600 mb-6">Voulez-vous réactiver le dossier médical <strong class="text-gray-800 font-mono">{{ dossier.numero_dossier }}</strong> ?</p>
+            
+            <div class="bg-green-50 border border-green-200 rounded p-4 mb-6 text-sm text-green-800 text-left">
+                <i class="fas fa-info-circle mr-2 font-bold"></i>
+                La réactivation rendra le dossier à nouveau actif pour la création de nouvelles consultations et autres soins courants.
+            </div>
+            
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <div class="flex gap-3">
+                    <a href="javascript:history.back()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg text-center transition">
+                        Annuler
+                    </a>
+                    <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition shadow-md">
+                        <i class="fas fa-redo mr-2"></i>Réactiver
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -616,19 +616,53 @@ def dossier_archive(request, pk):
                 defaults={'role': 'patient'}
             )
         
-        # Enregistrer l'archive
-        Archive.objects.create(
-            dossier_medical=dossier,
-            motif_archivage=motif,
-            archiviste=archiviste
-        )
-        
-        logger.info(f"Dossier médical archivé: {dossier.numero_dossier}")
-        messages.success(request, f"Dossier médical {dossier.numero_dossier} archivé")
+        # Enregistrer ou mettre à jour l'archive pour le même dossier
+        archives = Archive.objects.filter(dossier_medical=dossier).order_by('-date_archivage')
+        if archives.exists():
+            archive = archives.first()
+            archive.motif_archivage = motif
+            archive.archiviste = archiviste
+            archive.date_archivage = timezone.now()
+            archive.save(update_fields=['motif_archivage', 'archiviste', 'date_archivage'])
+
+            # Si des doublons existent encore, supprimer les anciens enregistrements
+            duplicates = archives.exclude(pk=archive.pk)
+            if duplicates.exists():
+                duplicates.delete()
+
+            logger.info(f"Archive mise à jour pour le dossier {dossier.numero_dossier}")
+            messages.success(request, f"Dossier médical {dossier.numero_dossier} archivé et mis à jour")
+        else:
+            Archive.objects.create(
+                dossier_medical=dossier,
+                motif_archivage=motif,
+                archiviste=archiviste
+            )
+            logger.info(f"Dossier médical archivé: {dossier.numero_dossier}")
+            messages.success(request, f"Dossier médical {dossier.numero_dossier} archivé")
+
         return redirect('saint_joseph:dossier_list')
     
     context = {'dossier': dossier}
     return render(request, 'saint_joseph/dossiers/archive_confirm.html', context)
+
+
+@login_required(login_url='login')
+@role_required('medecin', 'admin')
+def dossier_reactivate(request, pk):
+    """Réactiver un dossier médical archivé"""
+    dossier = get_object_or_404(DossierMedical, pk=pk)
+    
+    if request.method == 'POST':
+        dossier.est_actif = True
+        dossier.save()
+
+        logger.info(f"Dossier médical réactivé: {dossier.numero_dossier}")
+        messages.success(request, f"Dossier médical {dossier.numero_dossier} réactivé")
+        return redirect('saint_joseph:archive_list')
+    
+    context = {'dossier': dossier}
+    return render(request, 'saint_joseph/dossiers/reactivate_confirm.html', context)
 
 
 # ============================================================================

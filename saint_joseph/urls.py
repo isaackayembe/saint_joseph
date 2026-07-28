@@ -62,6 +62,7 @@ urlpatterns = [
     path('dossiers/', views.dossier_list, name='dossier_list'),
     path('dossiers/<int:patient_id>/', views.dossier_detail, name='dossier_detail'),
     path('dossiers/<int:pk>/archive/', views.dossier_archive, name='dossier_archive'),
+    path('dossiers/<int:pk>/reactivate/', views.dossier_reactivate, name='dossier_reactivate'),
     
     # Archives
     path('archives/', views.archive_list, name='archive_list'),
